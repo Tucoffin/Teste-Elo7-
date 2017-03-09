@@ -18,7 +18,7 @@ public class Elo7
     public static void main(String[] args) throws IOException {
         Reader.init(System.in, true);
         BufferedWriter out = new BufferedWriter(new OutputStreamWriter(System.out));
-        int linMax = Reader.nextInt(), colMax = Reader.nextInt(), x, y, i, direction;
+        int linMax = Reader.nextInt(), colMax = Reader.nextInt(), i;
         char instruction;
         String commands;
         
@@ -37,36 +37,102 @@ public class Elo7
         // que houver uma nova sonda cujas instruções serão processadas. A condição EOF (end of file) indica
         // que não há mais sondas e o programa libera o buffer de saída na tela do monitor
         
-        while (!Reader.isEOF()) {
-            x = Reader.nextInt();
-            y = Reader.nextInt();
-            direction = compassToInt.get(Reader.next());
+        while (!Reader.isEOF()) {            
+            Sonda.zeraVariaveis();
+            Sonda.setX(Reader.nextInt());
+            Sonda.setY(Reader.nextInt());            
+            Sonda.setDirecao(compassToInt.get(Reader.next()));            
+            
             commands = Reader.nextLine();
             for (i = 0; i < commands.length(); i++) {
                 instruction = commands.charAt(i);
                 if (instruction == 'L') {
-                    direction = (direction - 1) % 4;
-                    if (direction < 0) direction += 4;
+                    Sonda.viraSentidoAntihorario();
                 } else if (instruction == 'R') {
-                    direction = (direction + 1) % 4;                
+                    Sonda.viraSentidoHorario();  
                 } else {
-                    if (direction == 0 && y < linMax)                                          
-                        y++;
-                    else if (direction == 1 && x < colMax)
-                        x++;
-                    else if (direction == 2 && y > 0)
-                        y--;
-                    else if (direction == 3 && x > 0)
-                        x--;
+                    if (Sonda.getDirecao() == 0 && Sonda.getY() < linMax)                                          
+                        Sonda.moveNorte();
+                    else if (Sonda.getDirecao() == 1 && Sonda.getX() < colMax)
+                        Sonda.moveLeste();
+                    else if (Sonda.getDirecao() == 2 && Sonda.getY() > 0)
+                        Sonda.moveSul();
+                    else if (Sonda.getDirecao() == 3 && Sonda.getX() > 0)
+                        Sonda.moveOeste();
                     else 
                         // Condição em que alguma instrução ultrapassa o limite da área a ser explorada
                         out.write(String.format
                         ("Instrução no. %d, %c: Região planetária inválida!\n", i+1, instruction));
                 }
             }
-            out.write(String.format("%d %d %s\n", x, y, intToCompass.get(direction)));
+            out.write(String.format("%d %d %s\n", 
+                      Sonda.getX(), Sonda.getY(), intToCompass.get(Sonda.getDirecao())));
         }
         out.flush();
+    }
+}
+class Sonda {
+    // Fiz uma nova classe Sonda, que maneja todas as variáveis e métodos relacionados à movimentação da sonda
+    // no território marciano. Assim, para manipular a sonda é necessário acessar os membros e métodos desta 
+    // classe, sendo o acesso vedado a qualquer outra parte do programa.
+    
+    private static int x, y, direcao;       
+    
+    // O método que inicia as variáveis da sonda com zeros, antes de sua utilização.
+    
+    static void zeraVariaveis() {
+        x = y = direcao = 0;
+    }
+    
+    // Os três métodos que direcionam os valores da entrada às variáveis respectivas.
+    
+    static void setX(int n) {
+        x = n;
+    }
+    static void setY (int n) {
+        y = n;
+    }
+    static void setDirecao (int d) {
+        direcao = d;
+    }
+    
+    // Os métodos responsáveis pela alteração das coordenadas da sonda no momento atual.
+    
+    static void moveNorte() {
+        y++;
+    }
+    static void moveSul() {
+        y--;
+    }
+    static void moveLeste() {
+        x++;
+    }
+    static void moveOeste() {
+        x--;
+    }    
+    
+    // Os métodos que alternam a orientação da sonda no sentido horário ou antihorário, de acordo com as 
+    // instruções 'R' ou 'L', respectivamente.
+    
+    static void viraSentidoAntihorario () {
+        direcao = (direcao - 1) % 4;
+        if (direcao < 0) direcao += 4;
+    }
+    static void viraSentidoHorario () {
+        direcao = (direcao + 1) % 4;                
+    }
+    
+    // Os três métodos que retornam os valores apontados pelas variáveis x (eixo das abscissas), y (eixo das
+    // ordenadas) e direcao (orientação da sonda), em um dado momento.
+    
+    static int getDirecao() {
+        return direcao;
+    }
+    static int getX() {
+        return x;
+    }
+    static int getY() {
+        return y;
     }
 }
  class Reader{
@@ -108,3 +174,4 @@ public class Elo7
     }
     
     static int nextInt() throws IOException{return Integer.parseInt(next());}
+}
